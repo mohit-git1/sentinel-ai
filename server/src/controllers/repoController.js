@@ -24,16 +24,33 @@ exports.connectRepo = async (req, res, next) => {
         const { repoName, fullName } = req.body;
         const user = await User.findById(req.user.userId);
 
-        // Check if already connected
-        const existing = await Repository.findOne({ fullName });
-        if (existing) return res.status(409).json({ error: 'Repository already connected' });
+        // Check if this user already connected this repo
+        const existingForUser = await Repository.findOne({ fullName, userId: user._id });
+        if (existingForUser) return res.status(409).json({ error: 'Repository already connected' });
+
+        // If another user had this repo connected, reassign it to the current user
+        const existingGlobal = await Repository.findOne({ fullName });
+        if (existingGlobal) {
+            existingGlobal.userId = user._id;
+            existingGlobal.isActive = true;
+            await existingGlobal.save();
+            console.log(`[Repo] Reassigned '${fullName}' to user ${user.username}`);
+            return res.status(201).json(existingGlobal);
+        }
 
         // Create a GitHub webhook for pull_request events
-        const webhookId = await githubService.createWebhook(
-            user.accessToken,
-            fullName,
-            process.env.GITHUB_WEBHOOK_SECRET
-        );
+        let webhookId = null;
+        try {
+            webhookId = await githubService.createWebhook(
+                user.accessToken,
+                fullName,
+                process.env.GITHUB_WEBHOOK_SECRET
+            );
+        } catch (webhookErr) {
+            // Webhook creation can fail if one already exists or if running locally
+            // Still allow connection — the polling fallback will handle PR detection
+            console.warn(`[Repo] Webhook creation failed for '${fullName}': ${webhookErr.message}. Falling back to polling.`);
+        }
 
         const repo = await Repository.create({
             userId: user._id,

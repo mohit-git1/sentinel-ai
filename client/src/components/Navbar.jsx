@@ -4,12 +4,11 @@ import { Link, useNavigate } from 'react-router-dom';
  * Top navigation bar — shown on all authenticated pages.
  * Displays the Sentinel AI logo, nav links, and user avatar.
  */
-function Navbar({ user }) {
+function Navbar({ user, onLogout }) {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        localStorage.removeItem('sentinel_token');
-        localStorage.removeItem('sentinel_user');
+        if (onLogout) onLogout();
         navigate('/login');
         window.location.reload();
     };

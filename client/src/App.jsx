@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import AuthCallback from './pages/AuthCallback';
 
 function App() {
-    const { user, loading } = useAuth();
+    const { user, loading, logout } = useAuth();
 
     if (loading) {
         return (
@@ -19,7 +19,7 @@ function App() {
 
     return (
         <BrowserRouter>
-            {user && <Navbar user={user} />}
+            {user && <Navbar user={user} onLogout={logout} />}
             <Routes>
                 <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />

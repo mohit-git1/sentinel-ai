@@ -1,20 +1,33 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
+if (!process.env.GEMINI_API_KEY) {
+    console.error('⚠️  WARNING: GEMINI_API_KEY is not set! AI reviews will fail.');
+}
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
+ * Sleep for a given number of milliseconds.
+ */
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
  * Send a pull request diff to Gemini and get structured review comments.
- *
- * The prompt instructs the model to act as a senior code reviewer and return
- * a JSON object with `comments` (array) and `summary` (string).
+ * Includes retry logic with exponential backoff for rate limiting (429 errors).
  *
  * @param {string} diff - The raw unified diff from GitHub
  * @returns {{ comments: Array, summary: string }}
  */
 const reviewDiff = async (diff) => {
+    if (!process.env.GEMINI_API_KEY) {
+        throw new Error('GEMINI_API_KEY environment variable is not set');
+    }
+
     // Trim very large diffs to stay within token limits
     const trimmedDiff = diff.length > 15000 ? diff.substring(0, 15000) + '\n...(truncated)' : diff;
+
+    console.log(`[AI Review] Sending ${trimmedDiff.length} chars to Gemini...`);
 
     const model = genAI.getGenerativeModel({
         model: 'gemini-2.0-flash',
@@ -44,18 +57,42 @@ Focus on:
 
 Be concise. Only flag real issues, not nitpicks. Return valid JSON only.`;
 
-    const result = await model.generateContent([
-        { text: systemPrompt },
-        { text: `Review this pull request diff:\n\n${trimmedDiff}` },
-    ]);
+    const maxRetries = 3;
+    let lastError;
 
-    const response = result.response.text();
-    const parsed = JSON.parse(response);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const result = await model.generateContent([
+                { text: systemPrompt },
+                { text: `Review this pull request diff:\n\n${trimmedDiff}` },
+            ]);
 
-    return {
-        comments: parsed.comments || [],
-        summary: parsed.summary || 'No summary provided.',
-    };
+            const response = result.response.text();
+            console.log(`[AI Review] Raw Gemini response (first 200 chars): ${response.substring(0, 200)}`);
+
+            const parsed = JSON.parse(response);
+
+            return {
+                comments: parsed.comments || [],
+                summary: parsed.summary || 'No summary provided.',
+            };
+        } catch (error) {
+            lastError = error;
+            const isRateLimit = error.message && error.message.includes('429');
+
+            if (isRateLimit && attempt < maxRetries) {
+                const waitTime = Math.pow(2, attempt) * 5000; // 10s, 20s, 40s
+                console.warn(`[AI Review] Rate limited (attempt ${attempt}/${maxRetries}). Retrying in ${waitTime / 1000}s...`);
+                await sleep(waitTime);
+            } else if (!isRateLimit) {
+                console.error(`[AI Review] Gemini API error: ${error.message}`);
+                throw error;
+            }
+        }
+    }
+
+    console.error(`[AI Review] All ${maxRetries} attempts failed due to rate limiting.`);
+    throw lastError;
 };
 
 module.exports = { reviewDiff };
