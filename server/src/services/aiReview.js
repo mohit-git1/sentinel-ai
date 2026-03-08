@@ -1,10 +1,10 @@
-const OpenAI = require('openai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
- * Send a pull request diff to GPT-4o-mini and get structured review comments.
+ * Send a pull request diff to Gemini and get structured review comments.
  *
  * The prompt instructs the model to act as a senior code reviewer and return
  * a JSON object with `comments` (array) and `summary` (string).
@@ -16,12 +16,15 @@ const reviewDiff = async (diff) => {
     // Trim very large diffs to stay within token limits
     const trimmedDiff = diff.length > 15000 ? diff.substring(0, 15000) + '\n...(truncated)' : diff;
 
-    const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-            {
-                role: 'system',
-                content: `You are a senior software engineer reviewing a GitHub pull request.
+    const model = genAI.getGenerativeModel({
+        model: 'gemini-2.0-flash',
+        generationConfig: {
+            temperature: 0.3,
+            responseMimeType: 'application/json',
+        },
+    });
+
+    const systemPrompt = `You are a senior software engineer reviewing a GitHub pull request.
 Analyze the diff and return a JSON object with:
 - "comments": an array of issues found, each with:
   - "file": the file path
@@ -39,22 +42,19 @@ Focus on:
 5. Missing error handling
 6. Test suggestions
 
-Be concise. Only flag real issues, not nitpicks. Return valid JSON only.`,
-            },
-            {
-                role: 'user',
-                content: `Review this pull request diff:\n\n${trimmedDiff}`,
-            },
-        ],
-        temperature: 0.3,
-        response_format: { type: 'json_object' },
-    });
+Be concise. Only flag real issues, not nitpicks. Return valid JSON only.`;
 
-    const result = JSON.parse(response.choices[0].message.content);
+    const result = await model.generateContent([
+        { text: systemPrompt },
+        { text: `Review this pull request diff:\n\n${trimmedDiff}` },
+    ]);
+
+    const response = result.response.text();
+    const parsed = JSON.parse(response);
 
     return {
-        comments: result.comments || [],
-        summary: result.summary || 'No summary provided.',
+        comments: parsed.comments || [],
+        summary: parsed.summary || 'No summary provided.',
     };
 };
 

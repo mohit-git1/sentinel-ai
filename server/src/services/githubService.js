@@ -12,14 +12,23 @@ const getPRDiff = async (accessToken, fullName, prNumber) => {
     const [owner, repo] = fullName.split('/');
     const octokit = new Octokit({ auth: accessToken });
 
-    const { data } = await octokit.rest.pulls.get({
+    // Fetch changed files using GET /repos/{owner}/{repo}/pulls/{pull_number}/files
+    const { data: files } = await octokit.rest.pulls.listFiles({
         owner,
         repo,
         pull_number: prNumber,
-        mediaType: { format: 'diff' },
     });
 
-    return data;
+    console.log(`[Logs] files fetched: ${files.length} changed files for PR #${prNumber}`);
+
+    let diffString = '';
+    files.forEach(file => {
+        if (file.patch) {
+            diffString += `--- a/${file.filename}\n+++ b/${file.filename}\n${file.patch}\n\n`;
+        }
+    });
+
+    return diffString;
 };
 
 /**
@@ -45,7 +54,7 @@ const createWebhook = async (accessToken, fullName, webhookSecret) => {
             content_type: 'json',
             secret: webhookSecret,
         },
-        events: ['pull_request'],
+        events: ['pull_request', 'pull_request_review', 'pull_request_review_comment'],
         active: true,
     });
 
@@ -72,23 +81,25 @@ const deleteWebhook = async (accessToken, fullName, webhookId) => {
  * @param {number} prNumber    - PR number
  * @param {Array}  comments    - AI-generated comments with file, line, issue, suggestion
  */
-const postReviewComments = async (accessToken, fullName, prNumber, comments) => {
+const postReviewComments = async (accessToken, fullName, prNumber, comments, summary) => {
     const [owner, repo] = fullName.split('/');
     const octokit = new Octokit({ auth: accessToken });
 
     // Build a formatted review body from all comments
-    const body = comments
-        .map((c) => `**${c.type.toUpperCase()}** in \`${c.file}\` (line ${c.line}):\n${c.issue}\n\n💡 *Suggestion:* ${c.suggestion}`)
-        .join('\n\n---\n\n');
+    const bodyStr = comments && comments.length > 0
+        ? comments.map((c) => `**${(c.type || 'NOTE').toUpperCase()}** in \`${c.file}\` (line ${c.line || 'unknown'}):\n${c.issue}\n\n💡 *Suggestion:* ${c.suggestion}`).join('\n\n---\n\n')
+        : '';
 
-    if (body) {
-        await octokit.rest.issues.createComment({
-            owner,
-            repo,
-            issue_number: prNumber,
-            body: `## 🛡️ Sentinel AI Review\n\n${body}`,
-        });
-    }
+    const finalComment = `## 🛡️ Sentinel AI Review\n\n**Summary:**\n${summary || 'No summary provided.'}\n\n${bodyStr ? '---\n\n### Detailed Feedback\n\n' + bodyStr : '\n*✅ No critical issues found! Great job.*'}`;
+
+    await octokit.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number: prNumber,
+        body: finalComment,
+    });
+
+    console.log(`[Logs] comment posted on PR #${prNumber}`);
 };
 
 module.exports = { getPRDiff, createWebhook, deleteWebhook, postReviewComments };

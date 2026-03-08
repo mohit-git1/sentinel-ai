@@ -16,15 +16,20 @@ exports.handleWebhook = async (req, res, next) => {
             const hmac = crypto.createHmac('sha256', process.env.GITHUB_WEBHOOK_SECRET);
             const digest = 'sha256=' + hmac.update(body).digest('hex');
 
-            if (!crypto.timingSafeEqual(Buffer.from(signature || ''), Buffer.from(digest))) {
+            const sigBuf = Buffer.from(signature || '');
+            const digBuf = Buffer.from(digest);
+
+            // timingSafeEqual throws if lengths differ, so check lengths first
+            if (sigBuf.length !== digBuf.length || !crypto.timingSafeEqual(sigBuf, digBuf)) {
                 return res.status(401).json({ error: 'Invalid webhook signature' });
             }
         }
 
         const payload = JSON.parse(body.toString());
+        console.log('[Logs] webhook received. Full Payload:', JSON.stringify(payload, null, 2));
 
-        // We only care about pull_request events
-        if (event === 'pull_request') {
+        // We care about pull_request, pull_request_review, and pull_request_review_comment
+        if (event === 'pull_request' || event === 'pull_request_review' || event === 'pull_request_review_comment') {
             await webhookService.processPullRequestEvent(payload);
         }
 

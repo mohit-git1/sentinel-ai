@@ -12,8 +12,18 @@ function ConnectRepoModal({ onClose, onConnected }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!fullName.includes('/')) {
-            setError('Please enter in the format: owner/repo-name');
+
+        // Clean up the input in case they pasted a full URL
+        let cleanName = fullName.trim();
+        if (cleanName.includes('github.com/')) {
+            cleanName = cleanName.split('github.com/')[1];
+        }
+
+        // Remove trailing slashes or .git extensions
+        cleanName = cleanName.replace(/\/$/, '').replace(/\.git$/, '');
+
+        if (!cleanName.includes('/') || cleanName.split('/').length !== 2) {
+            setError('Please enter in the format: owner/repo-name (e.g. octocat/hello-world)');
             return;
         }
 
@@ -21,14 +31,18 @@ function ConnectRepoModal({ onClose, onConnected }) {
         setError('');
 
         try {
-            const repoName = fullName.split('/')[1];
+            const repoName = cleanName.split('/')[1];
             const newRepo = await api('/api/repos/connect', {
                 method: 'POST',
-                body: JSON.stringify({ repoName, fullName }),
+                body: JSON.stringify({ repoName, fullName: cleanName }),
             });
             onConnected(newRepo);
         } catch (err) {
-            setError(err.message || 'Failed to connect repository');
+            // A 404 from GitHub usually means the repo doesn't exist or they lack admin access
+            const errorMsg = err.message.includes('Not Found')
+                ? 'Repository not found. Ensure you spelled it correctly and have admin access to it.'
+                : err.message || 'Failed to connect repository';
+            setError(errorMsg);
         } finally {
             setLoading(false);
         }
