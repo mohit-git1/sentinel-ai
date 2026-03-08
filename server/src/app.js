@@ -4,6 +4,7 @@ const authRoutes = require('./routes/auth');
 const webhookRoutes = require('./routes/webhooks');
 const reviewRoutes = require('./routes/reviews');
 const repoRoutes = require('./routes/repos');
+const chatRoutes = require('./routes/chat');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/repos', repoRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

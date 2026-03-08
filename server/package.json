@@ -23,7 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.0",
     "octokit": "^4.0.2",
-    "@google/generative-ai": "^0.21.0"
+    "openai": "^6.27.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

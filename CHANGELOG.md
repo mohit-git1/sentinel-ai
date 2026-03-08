@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - GitHub OAuth authentication with JWT session management
 - Webhook listener for pull request events (opened, synchronize)
-- AI-powered code review using Google Gemini (gemini-2.0-flash)
+- AI-powered code review using NVIDIA API (microsoft/phi-4-mini-instruct)
 - Inline GitHub comment posting via Octokit
 - Repository management — connect/disconnect repos with one click
 - Dashboard with PR review history and analytics

@@ -25,6 +25,19 @@ const reviewSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    optimizations: [
+        {
+            file: { type: String, required: true },
+            originalCode: { type: String, required: true },
+            optimizedCode: { type: String, required: true },
+            explanation: { type: String, required: true },
+            impact: {
+                type: String,
+                enum: ['performance', 'readability', 'security', 'maintainability'],
+                required: true,
+            },
+        }
+    ],
     createdAt: {
         type: Date,
         default: Date.now,

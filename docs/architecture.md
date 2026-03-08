@@ -22,15 +22,15 @@
 2. **Developer opens a PR** → GitHub sends a `pull_request` event to our webhook endpoint
 3. **Webhook handler** verifies the HMAC signature and extracts the event payload
 4. **Webhook service** fetches the PR diff from GitHub via Octokit
-5. **AI Review service** sends the diff to Gemini with a structured prompt
-6. **Gemini returns** a JSON object with line-level comments and a summary
+5. **AI Review service** sends the diff to NVIDIA AI with a structured prompt
+6. **NVIDIA AI returns** a JSON object with line-level comments and a summary
 7. **GitHub service** posts the review as an inline comment on the PR
 8. **Review is saved** to MongoDB for the dashboard to display
 
 ## Data Flow
 
 ```
-PR Opened → Webhook → Verify Signature → Fetch Diff → Gemini AI → Save Review → Post GitHub Comments
+PR Opened → Webhook → Verify Signature → Fetch Diff → NVIDIA AI → Save Review → Post GitHub Comments
 ```
 
 ## Tech Stack
@@ -41,7 +41,7 @@ PR Opened → Webhook → Verify Signature → Fetch Diff → Gemini AI → Save
 | Backend    | Node.js, Express.js       |
 | Database   | MongoDB (Atlas)           |
 | Auth       | GitHub OAuth + JWT        |
-| AI         | Google Gemini API          |
+| AI         | NVIDIA API                 |
 | GitHub API | Octokit                   |
 | Deployment | Vercel + Render/Railway   |
 
@@ -49,5 +49,5 @@ PR Opened → Webhook → Verify Signature → Fetch Diff → Gemini AI → Save
 
 - **Raw body for webhooks**: The webhook route uses `express.raw()` instead of `express.json()` so we can verify GitHub's HMAC-SHA256 signature against the raw request body.
 - **Diff trimming**: Large diffs are trimmed to 15,000 characters to stay within token limits while still providing meaningful context.
-- **JSON response format**: We use Gemini's `responseMimeType: 'application/json'` to guarantee valid JSON output from the AI.
+- **JSON response format**: We instruct the model to return valid JSON output to guarantee structured responses from the AI.
 - **Upsert pattern**: Users and PRs use upsert to handle repeated events gracefully without duplicate records.

@@ -72,10 +72,10 @@ const processPullRequestEvent = async (payload) => {
             return;
         }
 
-        console.log(`[AI Review] Sending diff to Gemini for PR #${pr.number} (${diff.length} chars) ...`);
+        console.log(`[AI Review] Sending diff to NVIDIA AI for PR #${pr.number} (${diff.length} chars) ...`);
         const review = await aiReviewService.reviewDiff(diff);
 
-        console.log(`[AI Review] Got ${review.comments.length} comments from Gemini for PR #${pr.number}`);
+        console.log(`[AI Review] Got ${review.comments.length} comments from NVIDIA AI for PR #${pr.number}`);
 
         // Save review to database
         const Review = require('../models/Review');
@@ -83,6 +83,7 @@ const processPullRequestEvent = async (payload) => {
             prId: pullRequest._id,
             comments: review.comments,
             summary: review.summary,
+            optimizations: review.optimizations || [],
         });
 
         // Post comments back to GitHub

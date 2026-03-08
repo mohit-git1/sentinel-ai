@@ -12,4 +12,7 @@ router.get('/:id', authMiddleware, reviewController.getReviewById);
 // Manually trigger an AI review for a pull request
 router.post('/trigger/:prId', authMiddleware, reviewController.triggerReview);
 
+// Get similar past issues
+router.get('/similar/:type', authMiddleware, reviewController.getSimilarIssues);
+
 module.exports = router;

@@ -5,7 +5,7 @@
 - **Node.js** v18+ and **npm** v9+
 - **MongoDB Atlas** account (free tier works)
 - **GitHub OAuth App** ([create one here](https://github.com/settings/developers))
-- **Google Gemini API key** ([get one here](https://aistudio.google.com/apikey))
+- **NVIDIA API key** ([get one here](https://build.nvidia.com/))
 
 ## 1. Clone the Repository
 
@@ -35,7 +35,7 @@ Fill in the values:
 | `GITHUB_CLIENT_ID` | From your GitHub OAuth App settings |
 | `GITHUB_CLIENT_SECRET` | From your GitHub OAuth App settings |
 | `GITHUB_WEBHOOK_SECRET` | Any random string (used to verify webhooks) |
-| `GEMINI_API_KEY` | Your Google Gemini API key |
+| `NVIDIA_API_KEY` | Your NVIDIA API key |
 | `JWT_SECRET` | Any random string for signing JWTs |
 | `CLIENT_URL` | Frontend URL, default: `http://localhost:5173` |
 

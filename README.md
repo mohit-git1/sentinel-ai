@@ -32,7 +32,7 @@
 | **Backend** | Node.js, Express.js |
 | **Database** | MongoDB (Atlas) |
 | **Auth** | GitHub OAuth + JWT |
-| **AI Engine** | Google Gemini (gemini-2.0-flash) |
+| **AI Engine** | NVIDIA API (microsoft/phi-4-mini-instruct) |
 | **GitHub API** | Octokit |
 | **Deployment** | Vercel (frontend) + Render/Railway (backend) |
 
@@ -92,10 +92,10 @@ GitHub sends webhook ──▶ Sentinel verifies HMAC signature
                         Fetches PR diff via Octokit
                                 │
                                 ▼
-                        Sends diff to Gemini AI
+                        Sends diff to NVIDIA AI
                                 │
                                 ▼
-                        Gemini returns structured review
+                        NVIDIA AI returns structured review
                         (bugs, security, performance)
                                 │
                                 ▼
@@ -112,7 +112,7 @@ GitHub sends webhook ──▶ Sentinel verifies HMAC signature
 - Node.js v18+
 - MongoDB Atlas account
 - GitHub OAuth App
-- Gemini API key
+- NVIDIA API key
 
 ### 1. Clone
 
@@ -147,7 +147,7 @@ MONGODB_URI=mongodb+srv://...
 GITHUB_CLIENT_ID=your_client_id
 GITHUB_CLIENT_SECRET=your_client_secret
 GITHUB_WEBHOOK_SECRET=any_random_string
-GEMINI_API_KEY=your_gemini_api_key
+NVIDIA_API_KEY=your_nvidia_api_key
 JWT_SECRET=any_random_string
 CLIENT_URL=http://localhost:5173
 ```
@@ -194,6 +194,6 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 <div align="center">
 
-**Built with ❤️ and Google Gemini**
+**Built with ❤️ and NVIDIA AI**
 
 </div>

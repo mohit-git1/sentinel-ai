@@ -55,6 +55,7 @@ exports.triggerReview = async (req, res, next) => {
             prId: pr._id,
             comments: aiResult.comments,
             summary: aiResult.summary,
+            optimizations: aiResult.optimizations || [],
         });
 
         // 4. Post inline comments back to the GitHub PR
@@ -70,6 +71,29 @@ exports.triggerReview = async (req, res, next) => {
         await pr.save();
 
         res.json(review);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Get similar past issues based on a specific issue string or type.
+ */
+exports.getSimilarIssues = async (req, res, next) => {
+    try {
+        const { type } = req.params;
+        const decodedType = decodeURIComponent(type);
+        
+        // Find reviews where at least one comment is of the requested type (or has the word in 'issue')
+        // In a real app we'd use vector search, but regex search on 'issue' string is fine here
+        const similarReviews = await Review.find({
+            'comments': { $elemMatch: { issue: { $regex: decodedType, $options: 'i' } } }
+        })
+        .sort({ createdAt: -1 })
+        .limit(3)
+        .populate('prId');
+        
+        res.json(similarReviews);
     } catch (error) {
         next(error);
     }
