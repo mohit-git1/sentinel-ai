@@ -14,9 +14,8 @@ export function useAuth() {
         const validateSession = async () => {
             try {
                 const token = localStorage.getItem('sentinel_token');
-                const storedUser = localStorage.getItem('sentinel_user');
 
-                if (!token || !storedUser) {
+                if (!token) {
                     setLoading(false);
                     return;
                 }
