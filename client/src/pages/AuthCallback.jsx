@@ -1,43 +1,28 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 /**
  * Handles the OAuth callback redirect from GitHub.
- * Exchanges the authorization code for a JWT token via the backend,
+ * Receives the JWT token from the backend redirect,
  * stores the token, and redirects to the dashboard.
  */
 function AuthCallback() {
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
 
     useEffect(() => {
-        const code = searchParams.get('code');
-        if (!code) {
-            navigate('/login');
+        const token = searchParams.get('token');
+        if (!token) {
+            window.location.href = '/login';
             return;
         }
 
-        const exchangeCode = async () => {
-            try {
-                const res = await fetch(`/api/auth/github/callback?code=${code}`);
-                const data = await res.json();
-
-                if (data.token) {
-                    localStorage.setItem('sentinel_token', data.token);
-                    localStorage.setItem('sentinel_user', JSON.stringify(data.user));
-                    navigate('/');
-                } else {
-                    console.error('Auth failed:', data.error);
-                    navigate('/login');
-                }
-            } catch (error) {
-                console.error('Auth error:', error);
-                navigate('/login');
-            }
-        };
-
-        exchangeCode();
-    }, [searchParams, navigate]);
+        // Save the token provided by the backend redirect
+        localStorage.setItem('sentinel_token', token);
+        
+        // Use window.location.href to force a full page reload.
+        // This ensures the useAuth hook runs fresh and detects the new token.
+        window.location.href = '/';
+    }, [searchParams]);
 
     return (
         <div className="min-h-screen bg-surface flex items-center justify-center">

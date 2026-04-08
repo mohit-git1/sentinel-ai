@@ -26,6 +26,7 @@ exports.handleWebhook = async (req, res, next) => {
         }
 
         const payload = JSON.parse(body.toString());
+        console.log('[WEBHOOK] Received event:', payload.action, 'PR:', payload.pull_request?.number);
         console.log('[Logs] webhook received. Full Payload:', JSON.stringify(payload, null, 2));
 
         // We care about pull_request, pull_request_review, and pull_request_review_comment

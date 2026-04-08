@@ -4,14 +4,15 @@ const User = require('../models/User');
 const aiReviewService = require('./aiReview');
 const githubService = require('./githubService');
 
+const jobQueue = [];
+
 /**
  * Process an incoming pull_request webhook event from GitHub.
  *
  * Workflow:
  *   1. Find the connected repository in our database
- *   2. Create or update the PullRequest record
- *   3. If the PR was just opened or updated, trigger an AI review
- *   4. Post the review comments back to GitHub
+ *   2. Create or update the PullRequest record with status 'pending'
+ *   3. Enqueue the PR for background processing and return immediately
  *
  * @param {object} payload - The GitHub webhook payload
  */
@@ -28,12 +29,8 @@ const processPullRequestEvent = async (payload) => {
 
     // Find the connected repository
     const repo = await Repository.findOne({ fullName: repository.full_name });
-    if (!repo) {
-        console.log(`[Webhook] Repository '${repository.full_name}' not found in database — skipping`);
-        return;
-    }
-    if (!repo.isActive) {
-        console.log(`[Webhook] Repository '${repository.full_name}' is inactive — skipping`);
+    if (!repo || !repo.isActive) {
+        console.log(`[Webhook] Repository '${repository.full_name}' inactive or not found — skipping`);
         return;
     }
 
@@ -43,7 +40,7 @@ const processPullRequestEvent = async (payload) => {
         return;
     }
 
-    // Upsert the pull request record
+    // Upsert the pull request record immediately with status 'pending'
     let pullRequest = await PullRequest.findOne({ repoId: repo._id, prNumber: pr.number });
 
     if (!pullRequest) {
@@ -53,85 +50,99 @@ const processPullRequestEvent = async (payload) => {
             title: pr.title,
             author: pr.user.login,
             diffUrl: pr.diff_url,
+            status: 'pending'
         });
         console.log(`[Webhook] Created new PullRequest record for PR #${pr.number}`);
     } else {
         pullRequest.title = pr.title;
-        pullRequest.status = 'open';
+        pullRequest.status = 'pending';
         await pullRequest.save();
         console.log(`[Webhook] Updated existing PullRequest record for PR #${pr.number}`);
     }
 
-    // Fetch the diff, run AI review, and post comments
-    try {
-        console.log(`[AI Review] Fetching diff for PR #${pr.number} ...`);
-        const diff = await githubService.getPRDiff(user.accessToken, repo.fullName, pr.number);
-
-        if (!diff || diff.trim() === '') {
-            console.log(`[AI Review] No diff content for PR #${pr.number} — skipping review`);
-            return;
-        }
-
-        console.log(`[AI Review] Sending diff to NVIDIA AI for PR #${pr.number} (${diff.length} chars) ...`);
-        const review = await aiReviewService.reviewDiff(diff);
-
-        console.log(`[AI Review] Got ${review.comments.length} comments from NVIDIA AI for PR #${pr.number}`);
-
-        // Save review to database
-        const Review = require('../models/Review');
-        await Review.create({
-            prId: pullRequest._id,
-            comments: review.comments,
-            summary: review.summary,
-            optimizations: review.optimizations || [],
-        });
-
-        // Post comments back to GitHub
-        console.log(`[AI Review] Posting review comment on GitHub PR #${pr.number} ...`);
-        await githubService.postReviewComments(
-            user.accessToken,
-            repo.fullName,
-            pr.number,
-            review.comments,
-            review.summary
-        );
-
-        pullRequest.status = 'reviewed';
-        await pullRequest.save();
-
-        console.log(`✅ Successfully reviewed PR #${pr.number} on ${repo.fullName}`);
-    } catch (error) {
-        console.error(`❌ Failed to review PR #${pr.number}: ${error.message}`);
-        console.error(`   Stack: ${error.stack}`);
-    }
+    // Queue AI review as a background job
+    jobQueue.push({
+        prId: pullRequest._id,
+        prNumber: pr.number,
+        repoFullName: repo.fullName,
+        accessToken: user.accessToken
+    });
+    console.log(`[Webhook] Queued background AI review job for PR #${pr.number}`);
 };
 
 
 /**
+ * Background worker that continuously processes queued PR review jobs.
+ */
+async function processJobs() {
+    while (true) {
+        if (jobQueue.length === 0) {
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+        }
+
+        const job = jobQueue.shift();
+        try {
+            console.log(`[Worker] Started AI review for PR #${job.prNumber}`);
+            
+            // 1. Fetch diff
+            const diff = await githubService.getPRDiff(job.accessToken, job.repoFullName, job.prNumber);
+            if (!diff || diff.trim() === '') {
+                console.log(`[Worker] No diff content for PR #${job.prNumber} — skipping review`);
+                await PullRequest.findByIdAndUpdate(job.prId, { status: 'reviewed' });
+                continue;
+            }
+
+            // 2. Transmit to NVIDIA AI
+            const review = await aiReviewService.reviewDiff(diff);
+            console.log(`[Worker] Got ${review.comments.length} comments from NVIDIA AI for PR #${job.prNumber}`);
+            
+            // 3. Save to database
+            const Review = require('../models/Review');
+            await Review.create({
+                prId: job.prId,
+                comments: review.comments,
+                summary: review.summary,
+                optimizations: review.optimizations || [],
+            });
+
+            // 4. Post comments to GitHub
+            console.log(`[Worker] Posting review comment on GitHub PR #${job.prNumber} ...`);
+            await githubService.postReviewComments(
+                job.accessToken,
+                job.repoFullName,
+                job.prNumber,
+                review.comments,
+                review.summary
+            );
+
+            // 5. Update status
+            await PullRequest.findByIdAndUpdate(job.prId, { status: 'reviewed' });
+            console.log(`✅ [Worker] Successfully reviewed PR #${job.prNumber}`);
+        } catch (error) {
+            console.error(`❌ [Worker] Failed to review PR #${job.prNumber}:`, error);
+            await PullRequest.findByIdAndUpdate(job.prId, { status: 'failed' });
+        }
+    }
+}
+
+// Start queue worker immediately
+processJobs();
+
+/**
  * Fallback: poll GitHub API for open pull requests in all active repositories.
- * This runs on server boot and then every 60 seconds to catch any PRs
- * that were missed by the webhook (e.g. if the webhook URL is unreachable).
+ * This runs every 30 seconds to catch any PRs that miss the webhook (e.g. testing locally).
  */
 const pollPullRequests = async () => {
     try {
         const repos = await Repository.find({ isActive: true });
-
-        if (repos.length === 0) {
-            console.log('[Polling] No active repositories found — nothing to poll');
-            return;
-        }
-
-        console.log(`[Polling] Checking ${repos.length} active repositor${repos.length === 1 ? 'y' : 'ies'} for open PRs...`);
+        if (repos.length === 0) return;
 
         for (const repo of repos) {
             const user = await User.findById(repo.userId);
-            if (!user) {
-                console.log(`[Polling] No user found for repo '${repo.fullName}' — skipping`);
-                continue;
-            }
+            if (!user) continue;
 
             const [owner, repoName] = repo.fullName.split('/');
-
             try {
                 const response = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pulls?state=open`, {
                     headers: {
@@ -140,20 +151,15 @@ const pollPullRequests = async () => {
                     }
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`[Polling] GitHub API error for '${repo.fullName}': ${response.status} — ${errorText}`);
-                    continue;
-                }
-
+                if (!response.ok) continue;
                 const pulls = await response.json();
-                console.log(`[Polling] Found ${pulls.length} open PR(s) in '${repo.fullName}'`);
 
                 for (const pr of pulls) {
                     const existing = await PullRequest.findOne({ repoId: repo._id, prNumber: pr.number });
 
-                    if (!existing || existing.status !== 'reviewed') {
-                        console.log(`[Polling] Unreviewed PR #${pr.number} detected in '${repo.fullName}' — triggering AI review`);
+                    // Only queue unreviewed/unprocessed PRs
+                    if (!existing || existing.status === 'open') {
+                        console.log(`[Polling] New/unreviewed PR #${pr.number} caught by polling. Queueing job...`);
                         await processPullRequestEvent({
                             action: 'opened',
                             pull_request: pr,
@@ -161,21 +167,19 @@ const pollPullRequests = async () => {
                         });
                     }
                 }
-            } catch (repoError) {
-                console.error(`[Polling] Error polling '${repo.fullName}': ${repoError.message}`);
+            } catch (err) {
+                console.error(`[Polling] Failed to poll repo ${repo.fullName}`, err.message);
             }
         }
-    } catch (error) {
-        console.error('[Polling] Fatal error:', error.message);
-        console.error('  Stack:', error.stack);
+    } catch (err) {
+        console.error('[Polling] Fatal error:', err.message);
     }
 };
 
-// Run immediately on boot, then every 2 minutes as a fallback mechanism
 setTimeout(() => {
-    console.log('[Polling] Initial poll starting...');
+    console.log('[Polling] Initial local polling starting...');
     pollPullRequests();
-}, 3000); // Delay 3 seconds to let DB connect first
-setInterval(pollPullRequests, 2 * 60 * 1000);
+}, 3000);
+setInterval(pollPullRequests, 30 * 1000);
 
 module.exports = { processPullRequestEvent, pollPullRequests };

@@ -15,4 +15,7 @@ router.delete('/:id', authMiddleware, repoController.disconnectRepo);
 // Get pull requests for a specific repository
 router.get('/:id/pulls', authMiddleware, repoController.getRepoPulls);
 
+// Actively sync/fetch new pull requests from GitHub
+router.post('/:id/sync-pulls', authMiddleware, repoController.syncRepoPulls);
+
 module.exports = router;

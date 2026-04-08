@@ -20,7 +20,7 @@ const pullRequestSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['open', 'closed', 'merged', 'reviewed'],
+        enum: ['open', 'closed', 'merged', 'reviewed', 'pending', 'failed'],
         default: 'open',
     },
     // URL to fetch the raw diff from GitHub

@@ -25,12 +25,16 @@ exports.chatWithAI = async (prId, userMessage, history) => {
     const diff = await githubService.getPRDiff(user.accessToken, repo.fullName, pr.prNumber);
     const trimmedDiff = diff.length > 15000 ? diff.substring(0, 15000) + '\n...(truncated)' : diff;
 
-    const systemPrompt = "You are Sentinel AI, a code review assistant. You already reviewed this pull request. Answer the developer's follow-up questions clearly and concisely. Reference specific files and line numbers when relevant.";
+    const systemPrompt = `You are Sentinel AI, a code review assistant. You already reviewed this pull request. Answer the developer's follow-up questions clearly and concisely. Reference specific files and line numbers when relevant.
+
+Original PR Diff:
+${trimmedDiff}
+
+Previous AI Review:
+${JSON.stringify(review ? {summary: review.summary, comments: review.comments, optimizations: review.optimizations} : {})}`;
     
     const messages = [
-        { role: 'system', content: systemPrompt },
-        { role: 'system', content: `Original PR Diff:\n${trimmedDiff}` },
-        { role: 'system', content: `Previous AI Review:\n${JSON.stringify(review ? {summary: review.summary, comments: review.comments, optimizations: review.optimizations} : {})}` }
+        { role: 'system', content: systemPrompt }
     ];
 
     if (history && history.length > 0) {

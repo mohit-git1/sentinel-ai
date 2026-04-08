@@ -100,3 +100,58 @@ exports.getRepoPulls = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * Actively fetch open PRs from GitHub and sync them with our database.
+ */
+exports.syncRepoPulls = async (req, res, next) => {
+    try {
+        const repo = await Repository.findById(req.params.id);
+        if (!repo) return res.status(404).json({ error: 'Repository not found' });
+
+        const user = await User.findById(repo.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const [owner, repoName] = repo.fullName.split('/');
+        
+        try {
+            const response = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pulls?state=open`, {
+                headers: {
+                    'Authorization': `Bearer ${user.accessToken}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (!response.ok) {
+                console.error(`[Sync] Failed to fetch PRs from GitHub for ${repo.fullName}. Status: ${response.status}`);
+            } else {
+                const pulls = await response.json();
+                const { processPullRequestEvent } = require('../services/webhookService');
+
+                for (const pr of pulls) {
+                    const existing = await PullRequest.findOne({ repoId: repo._id, prNumber: pr.number });
+                    
+                    // Only process completely unrecorded PRs or ones that didn't complete processing.
+                    if (!existing || existing.status === 'open') {
+                        console.log(`[Sync] Found new/unreviewed PR #${pr.number}. Queueing job...`);
+                        await processPullRequestEvent({
+                            action: 'opened',
+                            pull_request: pr,
+                            repository: { full_name: repo.fullName }
+                        });
+                    }
+                }
+            }
+        } catch (githubErr) {
+            console.error(`[Sync] GitHub API error for ${repo.fullName}:`, githubErr);
+        }
+
+        // Return updated list of PRs
+        const updatedPulls = await PullRequest.find({ repoId: req.params.id })
+            .sort({ createdAt: -1 });
+        
+        res.json(updatedPulls);
+    } catch (error) {
+        next(error);
+    }
+};

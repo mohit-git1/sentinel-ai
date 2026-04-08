@@ -8,6 +8,8 @@ export default function ChatPanel({ prId, chatRef, initialHistory = [], setIniti
     const history = initialHistory || [];
     const setHistory = setInitialHistory;
 
+    const scrollRef = React.useRef(null);
+
     const handleSend = async (e, overrideMsg) => {
         if (e) e.preventDefault();
         const textToSend = overrideMsg || msg;
@@ -19,10 +21,12 @@ export default function ChatPanel({ prId, chatRef, initialHistory = [], setIniti
         if (!overrideMsg) setMsg("");
         setLoading(true);
 
-        // Scroll into view
-        if (chatRef && chatRef.current) {
-            chatRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
+        // Scroll into view safely
+        setTimeout(() => {
+            if (scrollRef.current) {
+                scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 100);
 
         try {
             const res = await api(`/api/chat/${prId}`, {
@@ -40,9 +44,11 @@ export default function ChatPanel({ prId, chatRef, initialHistory = [], setIniti
     };
 
     // Expose send explicitly for external buttons
-    if (chatRef && typeof chatRef === "object" && !chatRef.current) {
-       chatRef.current = { send: (m) => handleSend(null, m) };
-    }
+    React.useEffect(() => {
+        if (chatRef) {
+            chatRef.current = { send: (m) => handleSend(null, m) };
+        }
+    }, [chatRef, msg, history]);
 
     return (
         <div id="interactive-chat" className="mt-8 bg-surface-light border border-slate-700/50 rounded-xl overflow-hidden flex flex-col" style={{ height: '400px' }}>
@@ -67,6 +73,7 @@ export default function ChatPanel({ prId, chatRef, initialHistory = [], setIniti
                         </div>
                     </div>
                 )}
+                <div ref={scrollRef} />
             </div>
             <form onSubmit={handleSend} className="p-3 bg-slate-800 border-t border-slate-700 flex gap-2">
                 <input 
