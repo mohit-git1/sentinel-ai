@@ -21,7 +21,8 @@ export function useAuth() {
                 }
 
                 // Validate the JWT with the backend to make sure it's still valid
-                const res = await fetch('/api/auth/me', {
+                const baseURL = import.meta.env.VITE_API_URL || '';
+                const res = await fetch(`${baseURL}/api/auth/me`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 

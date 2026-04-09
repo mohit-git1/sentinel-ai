@@ -23,7 +23,8 @@ export async function api(url, opts = {}) {
         headers['Content-Type'] = 'application/json';
     }
 
-    const res = await fetch(url, { ...opts, headers });
+    const baseURL = import.meta.env.VITE_API_URL || '';
+    const res = await fetch(`${baseURL}${url}`, { ...opts, headers });
 
     if (!res.ok) {
         const error = await res.json().catch(() => ({ error: 'Request failed' }));
