@@ -4,10 +4,20 @@
 
 **AI-powered GitHub PR reviewer that catches bugs before humans do.**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Sentinel%20AI-6366f1?style=for-the-badge&logo=vercel&logoColor=white)](https://sentinel-ai-woad-beta.vercel.app/)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://reactjs.org)
 
+</div>
+
+---
+
+## 📸 Interface Preview
+
+<div align="center">
+  <img src="docs/screenshots/landing_page.png" alt="Sentinel AI Landing Page" width="800" style="border-radius: 10px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);" />
 </div>
 
 ---
