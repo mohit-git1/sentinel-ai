@@ -8,7 +8,7 @@ function Login() {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleLogin = () => {
-        window.location.href = '/api/auth/github';
+        window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/github`;
     };
 
     return (
