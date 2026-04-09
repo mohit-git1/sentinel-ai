@@ -4,8 +4,8 @@
 
 ```
 ┌──────────────┐     ┌──────────────────┐     ┌───────────────┐
-│   GitHub      │────▶│  Sentinel AI     │────▶│   OpenAI      │
-│   Webhook     │     │  Express Server  │     │   GPT-4o-mini │
+│   GitHub      │────▶│  Sentinel AI     │────▶│   NVIDIA AI   │
+│   Webhook     │     │  Express Server  │     │   phi-4-mini  │
 └──────────────┘     └──────────────────┘     └───────────────┘
                            │      │
                     ┌──────┘      └──────┐

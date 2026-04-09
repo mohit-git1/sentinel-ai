@@ -35,7 +35,7 @@ function Login() {
                 </p>
                 <p className="text-slate-400 mb-10 max-w-lg mx-auto">
                     Connect your repositories, and Sentinel will automatically review every pull request
-                    with GPT-4o-mini — finding bugs, security issues, and performance problems in seconds.
+                    with phi-4-mini-instruct — finding bugs, security issues, and performance problems in seconds.
                 </p>
 
                 {/* GitHub Login Button */}

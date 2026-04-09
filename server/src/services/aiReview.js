@@ -45,7 +45,7 @@ Use exactly this structure:
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             const completion = await client.chat.completions.create({
-                model: 'meta/llama-3.1-8b-instruct',
+                model: 'microsoft/phi-4-mini-instruct',
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: `Review this pull request diff:\n\n${trimmedDiff}` }
@@ -93,7 +93,7 @@ Use exactly this structure:
             let optimizations = [];
             try {
                 const optCompletion = await client.chat.completions.create({
-                    model: 'meta/llama-3.1-8b-instruct',
+                    model: 'microsoft/phi-4-mini-instruct',
                     messages: [
                         { role: 'system', content: optSystemPrompt },
                         { role: 'user', content: `Review this pull request diff for optimizations:\n\n${trimmedDiff}` }

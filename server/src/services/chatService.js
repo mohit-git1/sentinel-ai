@@ -44,7 +44,7 @@ ${JSON.stringify(review ? {summary: review.summary, comments: review.comments, o
     messages.push({ role: 'user', content: userMessage });
 
     const completion = await client.chat.completions.create({
-        model: 'meta/llama-3.1-8b-instruct',
+        model: 'microsoft/phi-4-mini-instruct',
         messages,
         temperature: 0.1,
         max_tokens: 1024,

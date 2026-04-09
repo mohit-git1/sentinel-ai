@@ -32,8 +32,7 @@ exports.getReviewById = async (req, res, next) => {
 };
 
 /**
- * Manually trigger an AI review for a pull request.
- * Fetches the diff from GitHub, sends it to GPT-4o-mini, saves the review,
+ * Fetches the diff from GitHub, sends it to NVIDIA AI, saves the review,
  * and posts inline comments back to the PR.
  */
 exports.triggerReview = async (req, res, next) => {
@@ -47,7 +46,7 @@ exports.triggerReview = async (req, res, next) => {
         // 1. Fetch the diff from GitHub
         const diff = await githubService.getPRDiff(user.accessToken, repo.fullName, pr.prNumber);
 
-        // 2. Send the diff to GPT-4o-mini for review
+        // 2. Send the diff to NVIDIA AI (phi-4-mini-instruct) for review
         const aiResult = await aiReviewService.reviewDiff(diff);
 
         // 3. Save the review to the database
