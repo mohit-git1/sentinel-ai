@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ Sentinel AI
+# Sentinel AI
 
 **AI-powered GitHub PR reviewer that catches bugs before humans do.**
 
@@ -14,7 +14,7 @@
 
 ---
 
-## 📸 Interface Preview
+## Interface Preview
 
 <div align="center">
   <img src="docs/screenshots/landing_page.png" alt="Sentinel AI Landing Page" width="800" style="border-radius: 10px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);" />
@@ -22,33 +22,33 @@
 
 ---
 
-## ✨ Features
+## Features
 
-- 🐛 **Bug Detection** — Catches logic errors, null references, and edge cases
-- 🔒 **Security Scan** — Identifies vulnerabilities, injection risks, and auth issues
-- ⚡ **Performance Tips** — Suggests optimizations for faster, leaner code
-- 🎨 **Style Review** — Enforces best practices and clean code patterns
-- 💬 **Inline GitHub Comments** — Posts reviews directly on your pull requests
-- 📝 **Plain English Summaries** — Readable overviews of every PR's quality
-- 🔄 **Automatic Triggers** — Reviews PRs as soon as they're opened or updated
+- **Bug Detection** — Catches logic errors, null references, and edge cases
+- **Security Scan** — Identifies vulnerabilities, injection risks, and auth issues
+- **Performance Tips** — Suggests optimizations for faster, leaner code
+- **Style Review** — Enforces best practices and clean code patterns
+- **Inline GitHub Comments** — Posts reviews directly on your pull requests
+- **Plain English Summaries** — Readable overviews of every PR's quality
+- **Automatic Triggers** — Reviews PRs as soon as they're opened or updated
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | React 18, Tailwind CSS, Vite |
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB (Atlas) |
-| **Auth** | GitHub OAuth + JWT |
-| **AI Engine** | NVIDIA API (microsoft/phi-4-mini-instruct) |
-| **GitHub API** | Octokit |
-| **Deployment** | Vercel (frontend) + Render/Railway (backend) |
+| Frontend | React 18, Tailwind CSS, Vite |
+| Backend | Node.js, Express.js |
+| Database | MongoDB (Atlas) |
+| Auth | GitHub OAuth + JWT |
+| AI Engine | NVIDIA API (microsoft/phi-4-mini-instruct) |
+| GitHub API | Octokit |
+| Deployment | Vercel (frontend) + Render/Railway (backend) |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 sentinel-ai/
@@ -90,7 +90,7 @@ sentinel-ai/
 
 ---
 
-## 🔧 How It Works
+## How It Works
 
 ```
 Developer opens a PR
@@ -115,7 +115,7 @@ GitHub sends webhook ──▶ Sentinel verifies HMAC signature
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -166,7 +166,7 @@ See [docs/setup.md](docs/setup.md) for the full setup guide.
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - [Setup Guide](docs/setup.md) — Installation & configuration
 - [API Reference](docs/api-reference.md) — All endpoints with examples
@@ -174,7 +174,7 @@ See [docs/setup.md](docs/setup.md) for the full setup guide.
 
 ---
 
-## 🧪 Running Tests
+## Running Tests
 
 ```bash
 node tests/webhook.test.js
@@ -184,7 +184,7 @@ node tests/github.test.js
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
@@ -196,7 +196,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
@@ -204,6 +204,6 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 <div align="center">
 
-**Built with ❤️ and NVIDIA AI**
+**Built with NVIDIA AI**
 
 </div>
