@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../utils/api';
 
 /**
@@ -9,6 +9,17 @@ function ConnectRepoModal({ onClose, onConnected }) {
     const [fullName, setFullName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        const handleEscape = (event) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, [onClose]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -50,18 +61,16 @@ function ConnectRepoModal({ onClose, onConnected }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/45" onClick={onClose}></div>
 
-            {/* Modal */}
-            <div className="relative bg-surface-light border border-slate-700/50 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-                <h2 className="text-xl font-bold text-white mb-1">Connect Repository</h2>
-                <p className="text-slate-400 text-sm mb-6">
+            <div className="panel relative w-full max-w-md rounded-2xl p-6 shadow-lg" role="dialog" aria-modal="true" aria-labelledby="connect-repository-title">
+                <h2 id="connect-repository-title" className="mb-1 text-xl font-semibold text-brand-950 dark:text-brand-50">Connect repository</h2>
+                <p className="mb-6 text-sm text-brand-600 dark:text-brand-400">
                     Enter the full name of the GitHub repository you want Sentinel to monitor.
                 </p>
 
                 <form onSubmit={handleSubmit}>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-brand-700 dark:text-brand-300">
                         Repository (owner/name)
                     </label>
                     <input
@@ -69,25 +78,26 @@ function ConnectRepoModal({ onClose, onConnected }) {
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="e.g. octocat/hello-world"
-                        className="w-full bg-surface border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+                        autoFocus
+                        className="w-full rounded-lg border border-brand-300 bg-white px-4 py-3 text-sm text-brand-900 outline-none transition-colors placeholder:text-brand-500 focus:border-brand-500 dark:border-brand-700 dark:bg-surface-dark dark:text-brand-100 dark:placeholder:text-brand-500 dark:focus:border-brand-300"
                     />
 
                     {error && (
-                        <p className="text-red-400 text-sm mt-2">{error}</p>
+                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
                     )}
 
                     <div className="flex gap-3 mt-6">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-medium py-2.5 rounded-lg transition-colors"
+                            className="btn-secondary flex-1"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading || !fullName}
-                            className="flex-1 bg-brand-600 hover:bg-brand-500 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors"
+                            className="btn-primary flex-1 disabled:cursor-not-allowed disabled:opacity-45"
                         >
                             {loading ? 'Connecting...' : 'Connect'}
                         </button>

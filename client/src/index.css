@@ -2,50 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ========================================
-   Sentinel AI — Global Styles
-   ======================================== */
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #0f172a;
-  color: #e2e8f0;
-  line-height: 1.6;
+  font-family: "Manrope", system-ui, sans-serif;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  @apply bg-brand-50 text-brand-900 dark:bg-surface-dark dark:text-brand-100;
 }
 
-/* Scrollbar styling */
+a,
+button,
+input {
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease, opacity 180ms ease;
+}
+
+:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 3px rgb(108 123 146 / 0.22);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Sora", "Manrope", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  @apply bg-brand-300/40 text-brand-900 dark:bg-brand-700/60 dark:text-brand-50;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1e293b;
+  width: 9px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 4px;
+  @apply bg-brand-300 rounded-full dark:bg-brand-700;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
 }
 
-/* Code blocks */
-code,
-pre {
-  font-family: 'JetBrains Mono', monospace;
-}
+@layer components {
+  .app-shell {
+    @apply min-h-screen bg-brand-50 text-brand-900 dark:bg-surface-dark dark:text-brand-100;
+  }
 
-/* Smooth transitions globally */
-a,
-button {
-  transition: all 0.2s ease;
+  .panel {
+    @apply border border-brand-200 bg-white dark:border-brand-800 dark:bg-surface-darkMuted;
+  }
+
+  .brand-frame {
+    @apply border border-brand-300 bg-brand-100/70 dark:border-brand-700 dark:bg-brand-900/50;
+  }
+
+  .btn-primary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-brand-50 transition-colors hover:bg-brand-800 dark:bg-brand-100 dark:text-brand-950 dark:hover:bg-brand-200;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-lg border border-brand-300 bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 transition-colors hover:bg-brand-100 dark:border-brand-700 dark:bg-surface-darkMuted dark:text-brand-200 dark:hover:bg-brand-900;
+  }
 }

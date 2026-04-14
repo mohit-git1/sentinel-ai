@@ -71,21 +71,20 @@ function RepoDetail() {
     };
 
     return (
-        <div className="min-h-screen bg-surface pt-20 px-4 sm:px-6 lg:px-8">
+        <div className="app-shell px-4 pb-16 pt-10 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-                <div className="flex gap-6">
-                    {/* Left: PR list */}
-                    <div className="w-full lg:w-1/3">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-2xl font-bold text-white">Pull Requests</h2>
+                <div className="grid gap-8 lg:grid-cols-[minmax(280px,360px)_1fr]">
+                    <section className="w-full">
+                        <div className="mb-5 flex items-center justify-between">
+                            <h2 className="text-2xl font-semibold text-brand-950 dark:text-brand-50">Pull requests</h2>
                             <button 
                                 onClick={handleSyncPulls} 
                                 disabled={isSyncing}
-                                className="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="btn-primary px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isSyncing ? (
                                     <>
-                                        <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
@@ -103,15 +102,15 @@ function RepoDetail() {
                         </div>
                         {loading ? (
                             <div className="flex justify-center py-10">
-                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-500"></div>
+                                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-brand-700 dark:border-brand-200"></div>
                             </div>
                         ) : pulls.length === 0 ? (
-                            <div className="text-center py-10 bg-surface-light/30 rounded-xl border border-slate-700/50">
-                                <p className="text-slate-400">No pull requests yet.</p>
-                                <p className="text-slate-500 text-sm mt-1">Open a PR on GitHub to see it here.</p>
+                            <div className="panel rounded-xl py-10 text-center">
+                                <p className="text-brand-700 dark:text-brand-300">No pull requests yet.</p>
+                                <p className="mt-1 text-sm text-brand-500 dark:text-brand-500">Open a PR on GitHub to see it here.</p>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-3.5">
                                 {pulls.map((pr) => (
                                     <PRCard
                                         key={pr._id}
@@ -122,10 +121,9 @@ function RepoDetail() {
                                 ))}
                             </div>
                         )}
-                    </div>
+                    </section>
 
-                    {/* Right: Review panel */}
-                    <div className="hidden lg:block lg:w-2/3">
+                    <section className="hidden lg:block">
                         {selectedPR ? (
                             <ReviewPanel
                                 pr={selectedPR}
@@ -134,14 +132,14 @@ function RepoDetail() {
                                 onTriggerReview={handleTriggerReview}
                             />
                         ) : (
-                            <div className="flex items-center justify-center h-96 bg-surface-light/20 rounded-2xl border border-slate-700/30">
+                            <div className="panel flex h-96 items-center justify-center rounded-2xl">
                                 <div className="text-center">
                                     <div className="text-4xl mb-3">👈</div>
-                                    <p className="text-slate-400">Select a pull request to view its AI review</p>
+                                    <p className="text-brand-600 dark:text-brand-400">Select a pull request to view its AI review</p>
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </section>
                 </div>
             </div>
         </div>

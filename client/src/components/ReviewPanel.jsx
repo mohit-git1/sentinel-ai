@@ -19,11 +19,11 @@ function ReviewPanel({ pr, reviews, loading, onTriggerReview }) {
     }, [pr._id]);
 
     const typeBadge = {
-        bug: { bg: 'bg-red-500/20', text: 'text-red-400', label: '🐛 Bug' },
-        security: { bg: 'bg-orange-500/20', text: 'text-orange-400', label: '🔒 Security' },
-        performance: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', label: '⚡ Performance' },
-        style: { bg: 'bg-blue-500/20', text: 'text-blue-400', label: '🎨 Style' },
-        suggestion: { bg: 'bg-slate-500/20', text: 'text-slate-400', label: '💡 Suggestion' },
+        bug: { bg: 'bg-red-100 dark:bg-red-900/40', text: 'text-red-700 dark:text-red-300', label: 'Bug' },
+        security: { bg: 'bg-orange-100 dark:bg-orange-900/40', text: 'text-orange-700 dark:text-orange-300', label: 'Security' },
+        performance: { bg: 'bg-yellow-100 dark:bg-yellow-900/40', text: 'text-yellow-700 dark:text-yellow-300', label: 'Performance' },
+        style: { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-300', label: 'Style' },
+        suggestion: { bg: 'bg-brand-200 dark:bg-brand-800', text: 'text-brand-700 dark:text-brand-300', label: 'Suggestion' },
     };
 
     const latestReview = reviews && reviews.length > 0 ? reviews[0] : null;
@@ -38,67 +38,61 @@ function ReviewPanel({ pr, reviews, loading, onTriggerReview }) {
         <div className="flex gap-6 relative">
             {/* Main content area */}
             <div className="flex-1 min-w-0">
-                {/* PR Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h2 className="text-2xl font-bold text-white">{pr.title}</h2>
-                        <p className="text-slate-400 text-sm mt-1">
+                        <h2 className="text-2xl font-semibold text-brand-950 dark:text-brand-50">{pr.title}</h2>
+                        <p className="mt-1 text-sm text-brand-600 dark:text-brand-400">
                             PR #{pr.prNumber} by {pr.author}
                         </p>
                     </div>
                     <button
                         onClick={() => onTriggerReview(pr._id)}
                         disabled={loading}
-                        className="bg-brand-600 hover:bg-brand-500 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium px-5 py-2.5 rounded-lg transition-colors shadow-lg shadow-brand-600/20"
+                        className="btn-primary px-5 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        {loading ? 'Reviewing...' : '🔄 Re-review'}
+                        {loading ? 'Reviewing...' : 'Re-review'}
                     </button>
                 </div>
 
-                {/* Loading state */}
                 {loading && (
                     <div className="flex justify-center py-16">
                         <div className="text-center">
-                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-brand-500 mx-auto mb-3"></div>
-                            <p className="text-slate-400 text-sm">AI is reviewing the code...</p>
+                            <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-b-2 border-t-2 border-brand-700 dark:border-brand-200"></div>
+                            <p className="text-sm text-brand-600 dark:text-brand-400">AI is reviewing the code...</p>
                         </div>
                     </div>
                 )}
 
-                {/* Empty State */}
                 {!loading && reviews.length === 0 && (
-                    <div className="text-center py-16 bg-surface-light/20 rounded-2xl border border-slate-700/30">
+                    <div className="panel rounded-2xl py-16 text-center">
                         <div className="text-4xl mb-3">🤖</div>
-                        <p className="text-slate-400">No reviews yet. Click "Re-review" to trigger an AI review.</p>
+                        <p className="text-brand-600 dark:text-brand-400">No reviews yet. Click "Re-review" to trigger an AI review.</p>
                     </div>
                 )}
 
-                {/* Tabs & Content */}
                 {!loading && latestReview && (
                     <div className="pb-8">
-                        {/* Tabs Navigation */}
-                        <div className="flex border-b border-slate-700 mb-6">
+                        <div className="mb-6 flex border-b border-brand-200 dark:border-brand-800">
                             <button
-                                className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${activeTab === 'review' ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-300'}`}
+                                className={`border-b-2 px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'review' ? 'border-brand-600 text-brand-800 dark:border-brand-300 dark:text-brand-100' : 'border-transparent text-brand-500 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-200'}`}
                                 onClick={() => setActiveTab('review')}
                             >
                                 Review
                             </button>
                             <button
-                                className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${activeTab === 'optimizations' ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-300'}`}
+                                className={`border-b-2 px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'optimizations' ? 'border-brand-600 text-brand-800 dark:border-brand-300 dark:text-brand-100' : 'border-transparent text-brand-500 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-200'}`}
                                 onClick={() => setActiveTab('optimizations')}
                             >
                                 Optimizations {latestReview.optimizations?.length > 0 && `(${latestReview.optimizations.length})`}
                             </button>
                         </div>
 
-                        {/* Tab Content: Review */}
                         {activeTab === 'review' && (
                             <div className="mb-8">
                                 {latestReview.summary && (
-                                    <div className="bg-surface-light/50 border border-slate-700/50 rounded-xl p-5 mb-5">
-                                        <h3 className="text-sm font-semibold text-brand-400 uppercase tracking-wider mb-2">Summary</h3>
-                                        <p className="text-slate-300 leading-relaxed">{latestReview.summary}</p>
+                                    <div className="panel mb-5 rounded-xl p-5">
+                                        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">Summary</h3>
+                                        <p className="leading-relaxed text-brand-700 dark:text-brand-300">{latestReview.summary}</p>
                                     </div>
                                 )}
 
@@ -108,21 +102,21 @@ function ReviewPanel({ pr, reviews, loading, onTriggerReview }) {
                                         return (
                                             <div
                                                 key={idx}
-                                                className="bg-surface-light/30 border border-slate-700/40 rounded-xl p-4 hover:border-slate-600/50 transition-colors"
+                                                className="panel rounded-xl p-4 transition-colors hover:border-brand-400 dark:hover:border-brand-600"
                                             >
                                                 <div className="flex items-center gap-3 mb-2">
                                                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.bg} ${badge.text}`}>
                                                         {badge.label}
                                                     </span>
-                                                    <span className="text-xs text-slate-500 font-mono">
+                                                    <span className="font-mono text-xs text-brand-500 dark:text-brand-400">
                                                         {comment.file}:{comment.line}
                                                     </span>
                                                 </div>
-                                                <p className="text-slate-300 text-sm mb-2">{comment.issue}</p>
+                                                <p className="mb-2 text-sm text-brand-700 dark:text-brand-300">{comment.issue}</p>
                                                 {comment.suggestion && (
-                                                    <div className="bg-surface/50 rounded-lg p-3 border border-slate-700/30">
-                                                        <p className="text-xs text-brand-400 font-semibold mb-1">💡 Suggestion</p>
-                                                        <p className="text-slate-400 text-sm font-mono">{comment.suggestion}</p>
+                                                    <div className="rounded-lg border border-brand-200 bg-brand-100/70 p-3 dark:border-brand-800 dark:bg-brand-900/40">
+                                                        <p className="mb-1 text-xs font-semibold text-brand-700 dark:text-brand-300">Suggestion</p>
+                                                        <p className="font-mono text-sm text-brand-600 dark:text-brand-400">{comment.suggestion}</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -132,15 +126,13 @@ function ReviewPanel({ pr, reviews, loading, onTriggerReview }) {
                             </div>
                         )}
 
-                        {/* Tab Content: Optimizations */}
                         {activeTab === 'optimizations' && (
                             <div className="mb-10">
                                 <OptimizationsTab optimizations={latestReview.optimizations || []} />
                             </div>
                         )}
 
-                        {/* Interactive Chat */}
-                        <div className="mt-8 pt-8 border-t border-slate-700/50">
+                        <div className="mt-8 border-t border-brand-200 pt-8 dark:border-brand-800">
                             <ChatPanel 
                                 prId={pr._id} 
                                 chatRef={chatRef}
@@ -152,7 +144,6 @@ function ReviewPanel({ pr, reviews, loading, onTriggerReview }) {
                 )}
             </div>
 
-            {/* Right Sidebar: Smart Suggestions */}
             {!loading && latestReview && (
                 <div className="hidden xl:block w-72 flex-shrink-0">
                     <SmartSuggestions 
