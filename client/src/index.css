@@ -68,7 +68,7 @@ h6 {
   }
 
   .brand-frame {
-    @apply border border-brand-300 bg-brand-100/70 dark:border-brand-700 dark:bg-brand-900/50;
+    @apply border border-brand-200 bg-white shadow-xl shadow-brand-200/20 dark:border-brand-700 dark:bg-brand-900/50 dark:shadow-none;
   }
 
   .btn-primary {

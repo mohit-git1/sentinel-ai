@@ -42,7 +42,7 @@ function Login() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mx-auto flex w-full max-w-5xl flex-1 items-center pb-12"
             >
-                <div className="grid w-full grid-cols-1 gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:gap-14">
+                <div className="grid w-full grid-cols-1 gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:gap-28">
                     <section className="space-y-10">
                         <div className="flex items-center gap-3">
                             <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-brand-300 bg-brand-100 text-brand-800 dark:border-brand-700 dark:bg-brand-900 dark:text-brand-100">
@@ -79,9 +79,9 @@ function Login() {
                         </div>
                     </section>
 
-                    <section className="brand-frame rounded-2xl p-6 sm:p-8 lg:mt-2">
-                        <h2 className="text-xl font-semibold text-brand-900 dark:text-brand-100">Sign in to continue</h2>
-                        <p className="mt-2 text-sm text-brand-600 dark:text-brand-400">
+                    <section className="brand-frame relative z-10 mx-auto w-full max-w-md rounded-2xl p-6 sm:p-8 lg:mt-2 lg:ml-auto">
+                        <h2 className="text-xl font-bold text-brand-950 dark:text-brand-50">Sign in to continue</h2>
+                        <p className="mt-2 text-sm text-brand-700 dark:text-brand-400">
                             Use your GitHub account to connect repositories and start automated PR reviews.
                         </p>
 
